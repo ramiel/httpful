@@ -197,7 +197,7 @@ class Request
     {
         if (!$this->hasBeenInitialized())
             $this->_curlPrep();
-		
+
         $result = curl_exec($this->_ch);
 
         if ($result === false) {
@@ -409,31 +409,31 @@ class Request
     {
         return $this->strictSSL(true);
     }
-	
-	/**
-	 * Use proxy configuration
-	 * @return Request this
-	 * @param string $proxy_host Hostname or address of the proxy
-	 * @param number $proxy_port Port of the proxy. Default 80
-	 * @param string $auth_type Authentication type or null. Accepted values are CURLAUTH_BASIC, CURLAUTH_NTLM. Default null, no authentication
-	 * @param string $auth_username Authentication username. Default null
-	 * @param string $auth_password Authentication password. Default null
-	 */
-	public function useProxy($proxy_host, $proxy_port = 80, $auth_type = null, $auth_username = null, $auth_password = null){
-		$this->addOnCurlOption(CURLOPT_PROXY, "{$proxy_host}:{$proxy_port}");
-		if(in_array($auth_type, array(CURLAUTH_BASIC,CURLAUTH_NTLM)) ){
-			$this->addOnCurlOption(CURLOPT_PROXYAUTH, $auth_type)
-				->addOnCurlOption(CURLOPT_PROXYUSERPWD, "{$auth_username}:{$auth_password}");
-		}
-		return $this;
-	}
-	
-	/**
+
+    /**
+     * Use proxy configuration
+     * @return Request this
+     * @param string $proxy_host Hostname or address of the proxy
+     * @param number $proxy_port Port of the proxy. Default 80
+     * @param string $auth_type Authentication type or null. Accepted values are CURLAUTH_BASIC, CURLAUTH_NTLM. Default null, no authentication
+     * @param string $auth_username Authentication username. Default null
+     * @param string $auth_password Authentication password. Default null
+     */
+    public function useProxy($proxy_host, $proxy_port = 80, $auth_type = null, $auth_username = null, $auth_password = null){
+        $this->addOnCurlOption(CURLOPT_PROXY, "{$proxy_host}:{$proxy_port}");
+        if(in_array($auth_type, array(CURLAUTH_BASIC,CURLAUTH_NTLM)) ){
+            $this->addOnCurlOption(CURLOPT_PROXYAUTH, $auth_type)
+                ->addOnCurlOption(CURLOPT_PROXYUSERPWD, "{$auth_username}:{$auth_password}");
+        }
+        return $this;
+    }
+
+    /**
      * @return is this request setup for using proxy?
      */
-	public function hasProxy(){
-		return is_string($this->additional_curl_opts[CURLOPT_PROXY]);
-	}
+    public function hasProxy(){
+        return is_string($this->additional_curl_opts[CURLOPT_PROXY]);
+    }
 
     /**
      * Determine how/if we use the built in serialization by
@@ -784,6 +784,14 @@ class Request
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $this->strict_ssl);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
+        // https://github.com/nategood/httpful/issues/84
+        // set Content-Length to the size of the payload if present
+        if (isset($this->payload)) {
+            $this->serialized_payload = $this->_serializePayload($this->payload);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $this->serialized_payload);
+            $this->headers['Content-Length'] = strlen($this->serialized_payload);
+        }
+
         $headers = array();
         // https://github.com/nategood/httpful/issues/37
         // Except header removes any HTTP 1.1 Continue from response headers
@@ -825,11 +833,6 @@ class Request
         $this->raw_headers .= "\r\n";
 
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-
-        if (isset($this->payload)) {
-            $this->serialized_payload = $this->_serializePayload($this->payload);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $this->serialized_payload);
-        }
 
         if ($this->_debug) {
             curl_setopt($ch, CURLOPT_VERBOSE, true);

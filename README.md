@@ -69,6 +69,14 @@ Httpful highly encourages sending in pull requests.  When submitting a pull requ
 
 # Changelog
 
+## 0.2.6
+
+ - FIX [I #85](https://github.com/nategood/httpful/issues/85) Empty Content Length issue resolved
+
+## 0.2.5
+
+ - FEATURE [I #80](https://github.com/nategood/httpful/issues/80) [I #81](https://github.com/nategood/httpful/issues/81) Proxy support added with `useProxy` method.
+
 ## 0.2.4
 
  - FEATURE [I #77](https://github.com/nategood/httpful/issues/77) Convenience method for setting a timeout (seconds) `$req->timeoutIn(10);`
